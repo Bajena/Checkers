@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using BoardEngine;
+﻿using System.Collections;
 
 namespace GameLogic
 {
@@ -19,9 +13,7 @@ namespace GameLogic
         {
             bool wayFound = false;
 
-            //System.Windows.Forms.MessageBox.Show("Antes de annadir: "+aux.Count);
             aux.Add(new BoardPosition(x, y));
-            //System.Windows.Forms.MessageBox.Show("Annadi: "+aux.Count);
 
             for (int i = 0; i < 2; i++)
             {
@@ -38,7 +30,6 @@ namespace GameLogic
                             this.ParentBoard.GetPieceAt(newX2, newY2) == null)
                         {
                             wayFound = true;
-                            //System.Windows.Forms.MessageBox.Show("Llamando recursivo: "+aux.Count);
                             EatMoves(newX2, newY2, moves);
                         }
                     }
@@ -53,7 +44,6 @@ namespace GameLogic
                 moves.Add(new CheckersMove(arr, true));
             }
 
-            //System.Windows.Forms.MessageBox.Show("Voy a quitar: "+aux.Count);
             aux.RemoveAt(aux.Count - 1);
         }
 

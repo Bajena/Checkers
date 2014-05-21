@@ -1,21 +1,14 @@
 using System;
-using BoardEngine;
-using GamesPackage;
+using GameLogic.Abstract;
 
 namespace GameLogic
 {
-	/// <summary>
-	/// Summary description for CheckersModerator.
-	/// </summary>
 	public class CheckersModerator : Moderator
 	{
 
 		public CheckersModerator(CheckersBoard board, CheckersPlayer whiteplayer, CheckersPlayer blackplayer) : base(new IPlayer[2]{whiteplayer,blackplayer})
 		{
 			this.CurrentGameState = board;
-			//
-			// TODO: Add constructor logic here
-			//
 		}
 
 		protected override void InvokePlayMethod(IPlayer player)
@@ -31,7 +24,7 @@ namespace GameLogic
 
 		}
 
-		public override bool isWinner(IPlayer player)
+		public override bool IsWinner(IPlayer player)
 		{
 			if (!isGameFinished()) return false;
 			CheckersPlayer myplayer = (CheckersPlayer)player;
@@ -108,24 +101,6 @@ namespace GameLogic
 			
 			int max=0;
 			bool eatMove=false;
-
-//			ArrayList tmp = (ArrayList)MyBoard.WhitePiecesList.Clone();
-//			if (MyPlayer.Color == PieceColor.Black) tmp = (ArrayList)MyBoard.BlackPiecesList.Clone();
-
-//			for(int i=0;i<tmp.Count;i++ ) {
-//				CheckersPiece aux = (CheckersPiece)tmp[i];
-//				System.Collections.ArrayList list=aux.PossibleMoves;
-//				if(list.Count>0) {
-//					CheckersMove move2=list[0] as CheckersMove;
-//					if(max < move2.MovePath.Length) {
-//						max=move2.MovePath.Length;
-//						System.Windows.Forms.MessageBox.Show("Max="+max);
-//					}
-//					if(move2.EatMove)
-//						eatMove=true;
-//				}
-//			}
-			
 
 			for(int x=0; x<MyBoard.Width; x++)
 				for(int y=0; y<MyBoard.Height; y++) {

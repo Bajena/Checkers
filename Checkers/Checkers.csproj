@@ -45,9 +45,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BoardDrawer.cs" />
-    <Compile Include="BoardPanel.cs">
-      <SubType>Component</SubType>
-    </Compile>
     <Compile Include="MainForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -82,17 +79,9 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\BoardEngine\BoardEngine.csproj">
-      <Project>{91C66B77-83E9-4664-B056-99B0570F45AC}</Project>
-      <Name>BoardEngine</Name>
-    </ProjectReference>
     <ProjectReference Include="..\GameLogic\GameLogic.csproj">
       <Project>{C935233B-E10E-493C-9936-D7D1FAF53B8D}</Project>
       <Name>GameLogic</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\GamesPackage\GamesPackage.csproj">
-      <Project>{1EA1EE9A-E9AD-48EF-82BA-66089ABDA9DB}</Project>
-      <Name>GamesPackage</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

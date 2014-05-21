@@ -58,8 +58,9 @@
             // nowaToolStripMenuItem
             // 
             this.nowaToolStripMenuItem.Name = "nowaToolStripMenuItem";
-            this.nowaToolStripMenuItem.Size = new System.Drawing.Size(105, 22);
+            this.nowaToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.nowaToolStripMenuItem.Text = "Nowa";
+            this.nowaToolStripMenuItem.Click += new System.EventHandler(this.nowaToolStripMenuItem_Click);
             // 
             // BoardPicturebox
             // 
@@ -72,6 +73,7 @@
             this.BoardPicturebox.TabIndex = 1;
             this.BoardPicturebox.TabStop = false;
             this.BoardPicturebox.MouseUp += new System.Windows.Forms.MouseEventHandler(this.BoardPicturebox_MouseUp);
+            this.BoardPicturebox.Resize += new System.EventHandler(this.BoardPicturebox_Resize);
             // 
             // moveButton
             // 
@@ -94,6 +96,7 @@
             this.MainMenuStrip = this.menuStrip1;
             this.Name = "MainForm";
             this.Text = "Form1";
+            this.Load += new System.EventHandler(this.MainForm_Load);
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.BoardPicturebox)).EndInit();

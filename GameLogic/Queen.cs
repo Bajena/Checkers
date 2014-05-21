@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Drawing;
-using BoardEngine;
 
 namespace GameLogic
 {
@@ -142,7 +141,7 @@ namespace GameLogic
 			}
 		}
 
-		protected override System.Drawing.Point[] IncMov 
+		protected override Point[] IncMov 
 		{
 			get 
 			{
@@ -165,16 +164,11 @@ namespace GameLogic
 				if (this._ParentBoard.IsInsideBoard(p.X, p.Y) && this._ParentBoard.IsEmptyCell(p.X, p.Y) && CanMoveTo(p.X, p.Y, possiblePos)) return true;
 			}
 			return false;
-
-			// ALGORITMO a IMPLEMENTAR: Muy similar al CanMoveTo(int, int, bool), pero buscando la pieza que te vas a comer
 		}
 
 		public override bool CanMoveTo(int newx, int newy) 
 		{
 			return this.CanMoveTo(newx, newy, this.PossiblePaths);
-
-			/*******************El siguiente codigo no se ha probado aun *******************************/
-			//			return this.CanMoveTo(newx, newy,false);
 		}
 		
 		public override bool CanMakeMove(CheckersMove move) 
@@ -230,7 +224,6 @@ namespace GameLogic
 			//			}
 		}
 	
-		#region UTILS
 
 		protected override System.Collections.ArrayList MovementInDirection(System.Drawing.Point increment ,ref bool outOfBoard)
 		{
@@ -306,7 +299,6 @@ namespace GameLogic
 				BoardPosition f = FoundInDirecction(newx, newy, IncMov[i],ref found);
 				if (found) return true;
 				
-				//Pare la busqueda en esa direccion porque encontre otra ficha
 				f = (f!=null) 
 					? (new BoardPosition(this.X+IncMov[i].X, this.Y+IncMov[i].Y))
 					: (new BoardPosition(f.X+IncMov[i].X, f.Y+IncMov[i].Y));
@@ -314,27 +306,23 @@ namespace GameLogic
 				if (!this._ParentBoard.IsInsideBoard(f.X,f.Y)) continue;
 				CheckersPiece piece = this._ParentBoard.GetPieceAt(f.X, f.Y) as CheckersPiece;
 						
-				//La pieza es de color contrario, intentare comer
 				if (piece.Color!=this.Color)
 				{
 					BoardPosition c = new BoardPosition(f.X+IncMov[i].X, f.Y+IncMov[i].Y);
 						
 					if ((this._ParentBoard.IsInsideBoard(c.X, c.Y) && this._ParentBoard.IsEmptyCell(c.X, c.Y)))
 					{
-						// Me puedo comer a 'piece'
 						this._ParentBoard.RemovePiece(f);
 						BoardPosition myPosition = new BoardPosition(this.X, this.Y);
 						this._ParentBoard.MovePieceTo(this, c.X,c.Y);
 								
-						//Llamo recursivo y construyo mi solucion
 						if (this.CanMoveTo(newx, newy ,true))return true;
 										
-						//Restauro mi posicion y la de 'piece' BACKTRACK!!!
 						this._ParentBoard.MovePieceTo(this, myPosition.X, myPosition.Y);
 						this._ParentBoard.PutPieceAt(f.X, f.Y,piece);
 					}
-				}//pieza de color contrario
-			}//for
+				}
+			}
 			
 			return false;
 		}
@@ -383,9 +371,7 @@ namespace GameLogic
 			return mov;
 		}
 		#endregion
-		
-		/**************************************/
-		#endregion
+
 		public override object Clone() 
 		{
 			return new Queen((CheckersBoard)this.ParentBoard, this.X, this.Y, this.Color);

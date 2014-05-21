@@ -1,6 +1,5 @@
 using System.Collections;
-using BoardEngine;
-using GamesPackage;
+using GameLogic.Abstract;
 
 namespace GameLogic
 {
@@ -9,8 +8,8 @@ namespace GameLogic
 	{
 		#region private and protected variables
 		
-		internal ArrayList BlackPiecesList = new ArrayList(12);
-		internal ArrayList WhitePiecesList = new ArrayList(12);
+		internal ArrayList BlackLog = new ArrayList(12);
+		internal ArrayList WhiteLog = new ArrayList(12);
 
 
 		#endregion
@@ -50,13 +49,10 @@ namespace GameLogic
 			return moves2;
 		}
 
-		/// <summary>
-		/// Clear all the boardm including the move's log
-		/// </summary>
 		public void Clear() 
 		{
-			WhitePiecesList.Clear();
-			BlackPiecesList.Clear();
+			WhiteLog.Clear();
+			BlackLog.Clear();
 			_BoardMatrix = new Piece[8,8];
 		}
 
@@ -97,12 +93,12 @@ namespace GameLogic
 		public override string ToString()
 		{
 			string s="";
-			foreach(CheckersPiece piece in WhitePiecesList) {
+			foreach(CheckersPiece piece in WhiteLog) {
 				s+="w"+piece.ToString();
 			}
 				s+='\n';
 
-			foreach(CheckersPiece piece in BlackPiecesList) {
+			foreach(CheckersPiece piece in BlackLog) {
 				s+="b"+piece.ToString();
 			}
 			

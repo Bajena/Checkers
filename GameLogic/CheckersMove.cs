@@ -1,12 +1,8 @@
 using System;
-using BoardEngine;
-using GamesPackage;
+using GameLogic.Abstract;
 
 namespace GameLogic
 {
-	/// <summary>
-	/// Summary description for CheckersMove.
-	/// </summary>
 	public class CheckersMove:IMove
 	{
 		public bool EatMove;

@@ -1,16 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using BoardEngine;
 using GameLogic;
-using GamesPackage;
 using System.Collections;
+using GameLogic.Abstract;
 
 namespace Checkers
 {
@@ -32,42 +26,29 @@ namespace Checkers
         public CheckersPlayer CurrentPlayer { get; set; }
         public CheckersPlayer BlackPlayer { get; set; }
         public CheckersPlayer WhitePlayer { get; set; }
-        BoardPosition LastSelectedPosition = new BoardPosition(0, 4);
-        bool lastMoveOk = false;
-        ArrayList moves = new ArrayList();
-        CheckersMove LastMove = null;
-        int level = 2;
-        Bitmap bitmap;
-        private BoardDrawer bdrawer;
-        ArrayList posiblemoves;
-        private ArrayList currentPath;
+        BoardPosition _lastSelectedPosition = new BoardPosition(0, 4);
+        bool _lastMoveOk = false;
+        readonly ArrayList _moves = new ArrayList();
+        CheckersMove _lastMove = null;
+        int _computerLevel = 2;
+        Bitmap _boardBitmap;
+        private BoardDrawer _boardDrawer;
+        ArrayList _posiblemoves;
+        private List<BoardPosition> _currentPath;
 
         public MainForm()
         {
             InitializeComponent();
-            MyBoard = new CheckersBoard();
-            MyBoard.InitializeBoard();
+            
 
-            bdrawer = new BoardDrawer(this.MyBoard);
-            bdrawer.SelectionColor = Color.Yellow;
+        }
 
-            SimpleCheckersPlayer white = new SimpleCheckersPlayer(PieceColor.White);
-            white.OnPerformMove += white_OnPerformMove;
-            //white.OnPlay += white_OnPlay;
-            white.OnOtherPlayerMovePerformed += white_OnOtherPlayerMovePerformed;
-            white.OnInvalidMove += white_OnInvalidMove;
-            white.OnGameOver += white_OnGameOver;
-
-            HumanCheckersPlayer black = new HumanCheckersPlayer(PieceColor.Black);
-            black.OnPerformMove += black_OnPerformMove;
-            black.OnPlay+=black_OnPlay;
-            black.OnOtherPlayerMovePerformed += black_OnOtherPlayerMovePerformed;
-            black.OnInvalidMove += black_OnInvalidMove;
-            black.OnGameOver += black_OnGameOver;
-
-            bitmap = new Bitmap(this.Width, this.Height);
-            Graphics.FromImage(bitmap).FillRectangle(new SolidBrush(Color.Black), new Rectangle(0, 0, this.Width, this.Height));
-            StartGame(white,black);
+        private void InitializeBoardDrawing()
+        {
+            _boardBitmap = new Bitmap(BoardPicturebox.Width, BoardPicturebox.Height);
+            Graphics.FromImage(_boardBitmap).FillRectangle(new SolidBrush(Color.Black), new Rectangle(0, 0, _boardBitmap.Width, _boardBitmap.Height));
+            BoardPicturebox.Image = _boardBitmap;
+            RepaintBoard();
         }
 
         void black_OnPerformMove(IPlayer player, IMove move)
@@ -85,19 +66,19 @@ namespace Checkers
 
         public void RepaintBoard()
         {
-            using (Graphics g = Graphics.FromImage(bitmap))
+            using (Graphics g = Graphics.FromImage(BoardPicturebox.Image))
             {
-                bdrawer.PaintBoard(g, 0, 0, BoardPicturebox.Width, BoardPicturebox.Height);
-                this.BoardPicturebox.Image = bitmap;
+                _boardDrawer.PaintBoard(g, 0, 0, BoardPicturebox.Width, BoardPicturebox.Height);
+                this.BoardPicturebox.Image = _boardBitmap;
             }
         }
         private void CheckStatus()
         {
             //if the lat move was valid
-            if (lastMoveOk)
+            if (_lastMoveOk)
             {
                 //update to queen if can be
-                BoardPosition lastposition = (BoardPosition)LastMove.MovePath[LastMove.MovePath.Length - 1];
+                BoardPosition lastposition = (BoardPosition)_lastMove.MovePath[_lastMove.MovePath.Length - 1];
                 CheckersPiece piece = (CheckersPiece)MyBoard.GetPieceAt(lastposition);
                 if (lastposition.Y == 0 && piece.Color == PieceColor.White && piece is Pawn)
                 {
@@ -111,19 +92,19 @@ namespace Checkers
                 }
             }
         }
-        bool IsPrefix(ArrayList path, CheckersMove move)
+        bool IsPrefix(List<BoardPosition> path, CheckersMove move)
         {
             if (path.Count > move.MovePath.Length)
                 return false;
             for (int i = 0; i < path.Count; i++)
-                if (((BoardPosition)path[i]).X != move.MovePath[i].X || ((BoardPosition)path[i]).Y != move.MovePath[i].Y)
+                if (path[i].X != move.MovePath[i].X || path[i].Y != move.MovePath[i].Y)
                     return false;
             return true;
         }
 
-        bool Check(ArrayList test)
+        bool Check(List<BoardPosition> test)
         {
-            foreach (CheckersMove move in posiblemoves)
+            foreach (CheckersMove move in _posiblemoves)
                 if (IsPrefix(test, move))
                     return true;
             return false;
@@ -132,14 +113,14 @@ namespace Checkers
         private void white_OnGameOver(bool winner)
         {
             RepaintBoard();
-            System.Threading.Thread.Sleep(100);
+            //System.Threading.Thread.Sleep(100);
             this.Refresh();
         }
 
         private void black_OnGameOver(bool winner)
         {
             RepaintBoard();
-            System.Threading.Thread.Sleep(100);
+            //System.Threading.Thread.Sleep(100);
             this.Refresh();
 
             //*Rayhand
@@ -158,18 +139,17 @@ namespace Checkers
 
         private void white_OnOtherPlayerMovePerformed(IPlayer player, IMove move)
         {
-            //this.Invalidate();
-            //MessageBox.Show("negras jugaron");
+            this.Invalidate();
             RepaintBoard();
-            System.Threading.Thread.Sleep(100);
+            //System.Threading.Thread.Sleep(100);
             this.Refresh();
         }
 
         private void white_OnInvalidMove(IMove move)
         {
-            lastMoveOk = false;
+            _lastMoveOk = false;
             this.CurrentPlayer = WhitePlayer;
-            //this.Invalidate();
+            this.Invalidate();
             RepaintBoard();
         }
 
@@ -184,14 +164,14 @@ namespace Checkers
         private void black_OnOtherPlayerMovePerformed(IPlayer player, IMove move)
         {
             RepaintBoard();
-            System.Threading.Thread.Sleep(100);
+            //System.Threading.Thread.Sleep(100);
             this.Refresh();
         }
 
         private void black_OnInvalidMove(IMove move)
         {
             this.CurrentPlayer = BlackPlayer;
-            lastMoveOk = false;
+            _lastMoveOk = false;
             RepaintBoard();
             //this.Invalidate();
         }
@@ -231,16 +211,16 @@ namespace Checkers
             if ((piece != null) && piece.Color != CurrentPlayer.Color) return;
 
             //if the user is selected another piece of its color then clear the selection and select this piece
-            if (piece != null && piece.Color == CurrentPlayer.Color && moves.Count > 0 && !moves[0].Equals(newpos))
+            if (piece != null && piece.Color == CurrentPlayer.Color && _moves.Count > 0 && !_moves[0].Equals(newpos))
             {
                 NewMove(piece,newpos);
             }
             else
             {
                 //not double cell consecuttively
-                if ((moves.Count >= 1) && moves[moves.Count - 1].Equals(newpos)) return;
+                if ((_moves.Count >= 1) && _moves[_moves.Count - 1].Equals(newpos)) return;
 
-                if (currentPath==null || currentPath.Count==0)
+                if (_currentPath==null || _currentPath.Count==0)
                     NewMove(piece,newpos);
                 else AddMoveToPath(newpos);
             }
@@ -256,54 +236,56 @@ namespace Checkers
         {
 
             var p = new BoardPosition(newpos.X, newpos.Y);
-            ArrayList newPath = currentPath.Clone() as ArrayList;
+            var newPath = new List<BoardPosition>(_currentPath);
+           
             newPath.Add(p);
 
-            foreach (BoardPosition pos in currentPath)
-                bdrawer.Selected[pos.X, pos.Y] = false;
+            foreach (BoardPosition pos in _currentPath)
+                _boardDrawer.Selected[pos.X, pos.Y] = false;
             do
             {
                 newPath.RemoveAt(newPath.Count - 1);
                 newPath.Add(p);
                 if (Check(newPath))
                 {
-                    currentPath = newPath;
-                    moves.Add(newpos);
-                    bdrawer.Selected[newpos.X, newpos.Y] = true;
+                    _currentPath = newPath;
+                    _moves.Add(newpos);
+                    _boardDrawer.Selected[newpos.X, newpos.Y] = true;
                     break;
                 }
                 newPath.RemoveAt(newPath.Count - 1);
             } while (newPath.Count > 0);
-            foreach (BoardPosition pos in currentPath)
-                bdrawer.Selected[pos.X, pos.Y] = true;
+            foreach (BoardPosition pos in _currentPath)
+                _boardDrawer.Selected[pos.X, pos.Y] = true;
         }
 
         private void NewMove(CheckersPiece piece, BoardPosition position)
         {
-            moves.Clear();
-            moves.Add(position);
-            posiblemoves = piece.PossibleMoves;
-            currentPath = new ArrayList();
-            currentPath.Add(new BoardPosition(piece.X, piece.Y));
-            bdrawer.ClearSelection();
-            bdrawer.Selected[piece.X, piece.Y] = true;
+            _moves.Clear();
+            _moves.Add(position);
+            _posiblemoves = piece.PossibleMoves;
+            
+            _currentPath = new List<BoardPosition>();
+            _currentPath.Add(new BoardPosition(piece.X, piece.Y));
+            _boardDrawer.ClearSelection();
+            _boardDrawer.Selected[piece.X, piece.Y] = true;
         }
 
         private void MakeMove()
         {
-            if (moves.Count <= 1) ResetMove();
+            if (_moves.Count <= 1) ResetMove();
             else
             {
-                BoardPosition[] pos = new BoardPosition[moves.Count];
-                moves.CopyTo(0, pos, 0, moves.Count);
+                BoardPosition[] pos = new BoardPosition[_moves.Count];
+                _moves.CopyTo(0, pos, 0, _moves.Count);
                 bool eatMove = CheckersMove.IsEatMove(this.MyBoard, pos);
                 
                 CheckersMove move = new CheckersMove(pos, eatMove);
-                lastMoveOk = true;
+                _lastMoveOk = true;
                 ((HumanCheckersPlayer)CurrentPlayer).MakeAMove(move);
 
-                if (lastMoveOk) LastMove = move;
-                else LastMove = null;
+                if (_lastMoveOk) _lastMove = move;
+                else _lastMove = null;
 
                 CheckStatus();
                 ResetMove();
@@ -312,15 +294,60 @@ namespace Checkers
 
         private void ResetMove()
         {
-            this.moves.Clear();
-            this.bdrawer.ClearSelection();
-            currentPath.Clear();
+            this._moves.Clear();
+            this._boardDrawer.ClearSelection();
+            _currentPath.Clear();
             RepaintBoard();
         }
 
         private void moveButton_Click(object sender, EventArgs e)
         {
             MakeMove();
+        }
+
+        private void BoardPicturebox_Resize(object sender, EventArgs e)
+        {
+            InitializeBoardDrawing();
+        }
+
+        private void MainForm_Load(object sender, EventArgs e)
+        {
+            this.Show();
+            NewGame();
+        }
+
+        private void NewGame()
+        {
+
+            MyBoard = new CheckersBoard();
+            MyBoard.InitializeBoard();
+
+            _boardDrawer = new BoardDrawer(this.MyBoard);
+            _boardDrawer.SelectionColor = Color.Yellow;
+
+            HumanCheckersPlayer white = new HumanCheckersPlayer(PieceColor.White);
+            //SimpleCheckersPlayer white = new SimpleCheckersPlayer(PieceColor.White, new PawnStrengthBoardEvaluator());
+            white.OnPerformMove += white_OnPerformMove;
+            //white.OnPlay += white_OnPlay;
+            white.OnOtherPlayerMovePerformed += white_OnOtherPlayerMovePerformed;
+            white.OnInvalidMove += white_OnInvalidMove;
+            white.OnGameOver += white_OnGameOver;
+
+            SimpleCheckersPlayer black = new SimpleCheckersPlayer(PieceColor.Black, new PawnStrengthBoardEvaluator());
+            black.MaxSearchDepth = 3;
+            black.OnPerformMove += black_OnPerformMove;
+            //black.OnPlay+=black_OnPlay;
+            black.OnOtherPlayerMovePerformed += black_OnOtherPlayerMovePerformed;
+            black.OnInvalidMove += black_OnInvalidMove;
+            black.OnGameOver += black_OnGameOver;
+
+            InitializeBoardDrawing();
+            StartGame(white, black);
+        }
+
+        private void nowaToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            NewGame();
         }
     }
 }

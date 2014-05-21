@@ -3,11 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Windows.Forms;
 
-namespace Checkers
+namespace GameLogic
 {
-    public class BoardPanel : Panel
+    public enum PieceColor
     {
+        White = 0,
+        Black = 1
     }
 }

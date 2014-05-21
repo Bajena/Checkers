@@ -1,19 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Drawing;
-using System.Drawing.Imaging;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using BoardEngine;
 using GameLogic;
 
 namespace Checkers
 {
-    /// <summary>
-    /// Summary description for BoardDrawe.
-    /// </summary>
     public class BoardDrawer
     {
         private Pen SelectionPen;
@@ -32,7 +23,6 @@ namespace Checkers
 
         protected CheckersBoard _Board;
 
-
         public bool[,] Selected = new bool[8, 8];
 
         public BoardDrawer(CheckersBoard board)
@@ -49,10 +39,6 @@ namespace Checkers
             else return Color.Empty;
         }
 
-        /// <summary>
-        /// Paints the board over the current graphics
-        /// </summary>
-        /// <param name="g"></param>
         public virtual void PaintBoard(Graphics g, int startx, int starty, int width, int height)
         {
             int cellWidth = width / 8;
@@ -71,24 +57,11 @@ namespace Checkers
                     {
                         g.FillRectangle(brush, new Rectangle(cellWidth * i + startx, cellHeight * j + starty, cellWidth, cellHeight));
                         
-                        //draw the cell
-                        //if (White) cellimage = WhiteCellImage;
-                        //else cellimage = BlackCellImage;
-                        //g.DrawImage(cellimage, new Rectangle(cellWidth * i + startx, cellHeight * j + starty, cellWidth, cellHeight), originalRect, GraphicsUnit.Pixel);
-
-                        //now draw the piece
                         CheckersPiece piece = (CheckersPiece)this._Board.GetPieceAt(i, j);
-                        if (piece != null) //if there is a piece there
+                        if (piece != null)
                         {
-                            //PieceImage = GetPieceColor(piece);
                             try
                             {
-                                //Color transp = ((Bitmap)PieceImage).GetPixel(0, 0);
-                                //ImageAttributes attr = new ImageAttributes();
-                                // attr.SetColorKey(transp, transp);
-                                //attr.SetColorKey(Color.FromArgb(248,248,240),Color.FromArgb(248,248,240));
-                                //g.DrawImage(PieceImage, new Rectangle(cellWidth * i + startx, cellHeight * j + starty, cellWidth, cellHeight), 0, 0, 32, 32, GraphicsUnit.Pixel, attr);
-
                                 brush.Color = GetPieceColor(piece);
                                 g.FillEllipse(brush, new Rectangle(cellWidth * i + startx, cellHeight * j + starty, cellWidth, cellHeight));
                             }

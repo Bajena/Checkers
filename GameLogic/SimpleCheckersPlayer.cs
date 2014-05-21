@@ -1,22 +1,28 @@
 using System;
 using System.Windows.Forms;
-using BoardEngine;
-using GamesPackage;
+using GameLogic.Abstract;
 
 namespace GameLogic
 {
 	/// <summary>
 	/// Summary description for SimpleCheckersPlayer.
 	/// </summary>
-	public class SimpleCheckersPlayer: CheckersPlayer	
-	{
-		protected PieceColor _Color;
-		
+	public class SimpleCheckersPlayer: CheckersPlayer
+    {
+        public int MaxSearchDepth = 2;
+
+		protected PieceColor _color;
+        private IBoardEvaluator _boardEvaluator;
+        CheckersMove selectedMove;
+        Random r = new Random();
+
+
+
 		public PieceColor Color 
 		{
 			get 
 			{
-				return  _Color;
+				return  _color;
 			}
 			set 
 			{
@@ -24,17 +30,13 @@ namespace GameLogic
 		}
 		#region Constructors
 
-		/// <summary>
-		/// Creates an instance of the SimpleChessPlayer class given its Player Color (Black or White)
-		/// </summary>
-		/// <param name="color">The piece's color for this player</param>
-		public SimpleCheckersPlayer(PieceColor color)
+	    public SimpleCheckersPlayer(PieceColor color, IBoardEvaluator boardEvaluator)
 		{
-			this._Color = color;			
-			
+		    this._color = color;
+		    _boardEvaluator = boardEvaluator;
 		}
 
-		#endregion
+	    #endregion
 		#region IPlayer Members
 
 		public event PerformMove OnOtherPlayerMovePerformed;
@@ -42,7 +44,6 @@ namespace GameLogic
 		public void MovedPerformed(IPlayer player, IMove move)
 		{
 			if (OnOtherPlayerMovePerformed!=null) OnOtherPlayerMovePerformed(player,move);
-			// TODO:  Add HumanCheckersPlayer.MovedPerformed implementation
 		}
 
 		public void MakeAMove(CheckersMove move) 
@@ -50,8 +51,6 @@ namespace GameLogic
 			if (OnPerformMove!=null) OnPerformMove(this,move);
 		}
 
-		CheckersMove sMove;
-		Random r=new Random();
 
 		protected int Inc(int a, int b)
 		{
@@ -71,7 +70,7 @@ namespace GameLogic
 			int x1=move.MovePath[0].X;
 			int y1=move.MovePath[0].Y;
 
-			CheckersPiece mPiece=(CheckersPiece)newBoard.GetPieceAt(x1, y1);
+			CheckersPiece movingPiece=(CheckersPiece)newBoard.GetPieceAt(x1, y1);
 
 			for(int i=0; i<move.MovePath.Length-1; i++)
 			{
@@ -92,36 +91,32 @@ namespace GameLogic
 				}
 			}
 
-			if(y1==0 && mPiece.Color==PieceColor.White)
+            //White queen
+			if(y1==0 && movingPiece.Color==PieceColor.White)
 			{
-				//System.Windows.Forms.MessageBox.Show("Queen");
 				newBoard.PutPieceAt(x1, y1, new Queen(newBoard, x1, y1, PieceColor.White));
 			}
-			else
-				if(y1==7 && mPiece.Color==PieceColor.Black)
+			else if(y1==7 && movingPiece.Color==PieceColor.Black) //black queen
 				{
-					//System.Windows.Forms.MessageBox.Show("Queen");
 					newBoard.PutPieceAt(x1, y1, new Queen(newBoard, x1, y1, PieceColor.Black));
 				}
-			else
-				newBoard.PutPieceAt(x1, y1, mPiece);
+			else //simply move piece
+				newBoard.PutPieceAt(x1, y1, movingPiece);
 
 			return newBoard;
 		}
 
-		protected double SelectMove(CheckersBoard board, PieceColor color, int level, double alpha, double beta)
+		protected double SelectMove(CheckersBoard board, PieceColor color, int currentSearchDepth, double alpha, double beta)
 		{
 			System.Collections.ArrayList moves=board.RightMoves(color);
 			
-			
-			//System.Windows.Forms.MessageBox.Show(moves.Count +" posibles jugadas");
-			if(level==0 || moves.Count==0)
-				return Eval(board, level);
+			if(currentSearchDepth==0 || moves.Count==0)
+				return _boardEvaluator.Eval(board, currentSearchDepth,Color);
 			else
 			{
 				//if have only one oportunnity the return this one and save time
-				if (level == LEVELS+(int)this.Color && (moves.Count == 1)) {
-					sMove = moves[0] as CheckersMove;
+				if (currentSearchDepth == MaxSearchDepth && (moves.Count == 1)) {
+					selectedMove = moves[0] as CheckersMove;
 					return 0;
                 }
                 				
@@ -132,107 +127,44 @@ namespace GameLogic
 
 					CheckersBoard newBoard=PerformMove(board, move);
                     
-					double eval=SelectMove(newBoard, (PieceColor)(((int)color+1)%2), level-1,alpha,beta);
-												
+					double eval=SelectMove(newBoard, color == PieceColor.White ? PieceColor.Black : PieceColor.White, currentSearchDepth-1,alpha,beta);
+					
 					if(color==this.Color) {
 						if(max<eval) 
 						{
 							max=eval;
 
-							if(level==LEVELS+(int)this.Color) 
+							if(currentSearchDepth==MaxSearchDepth) 
 							{
-								sMove=move;
-								//System.Windows.Forms.MessageBox.Show("Got a move "+sMove + " level :"+LEVELS);
+								selectedMove=move;
+								//System.Windows.Forms.MessageBox.Show("Got a move "+selectedMove + " currentSearchDepth :"+MaxSearchDepth);
 							}
 						
-							//**** Added by Leonardo
 							if (beta<=max) break;
 							else alpha = Math.Max(alpha,max);
-							//****
 						}
-						else
-							if(max==eval)
+						else if(max==eval)
 							{
-								if((level==LEVELS+(int)this.Color) && (r.Next(9)%2==0))  
+								if((currentSearchDepth==MaxSearchDepth)/* && (r.Next(9)%2==0)*/)  
 								{
-									sMove=move;
-									//System.Windows.Forms.MessageBox.Show("Got a move "+sMove + " level :"+LEVELS);
+									selectedMove=move;
+									//System.Windows.Forms.MessageBox.Show("Got a move "+selectedMove + " currentSearchDepth :"+MaxSearchDepth);
 								}
 							}
 					}
 					else {
 						if(max>eval) max=eval;
 
-						///****** Added by leonardo
 						if (alpha>=max) break;
 						else beta = Math.Min(beta,max);
-						///****
 
 					}
-					//System.Windows.Forms.MessageBox.Show(newBoard.ToString()+'\n'+"Level "+level+" Color "+color+" Max "+max+" eval "+eval);
+					//System.Windows.Forms.MessageBox.Show(newBoard.ToString()+'\n'+"Level "+currentSearchDepth+" Color "+color+" Max "+max+" eval "+eval);
 				}
 				return max;
 			}
 		}
 		
-		protected double Eval(CheckersBoard board, int level)
-		{
-			
-			double myval = 0;
-			double enemyval = 0;
-			for(int x=0; x<board.Width; x++)
-				for(int y=0; y<board.Height; y++)
-				{
-					CheckersPiece piece=board.GetPieceAt(x, y) as CheckersPiece;
-					if(piece!=null)
-					{
-						int factor  = (piece.Color == PieceColor.White)?(7-y):(y);
-						if (piece.Color == this.Color) 
-						{
-							if (piece is Pawn) myval+=100 + (factor*factor);
-							else 
-							{
-								
-								myval+=200;
-								if (y==0) 
-								{
-									if (x==0) myval-=40;
-									else myval-=20;
-								}
-								else if (y == 7) 
-								{
-									if (x==7) myval-=40;
-									else myval-=20;                                                                        
-								}
-							}
-						}
-						else 
-						{
-							if (piece is Pawn) enemyval+=100 + (factor*factor);
-							else  
-							{
-								enemyval+=200;
-								if (y==0) 
-								{
-									if (x==0) enemyval-=40;
-									else enemyval-=20;
-								}
-								else if (y == 7) 
-								{
-									if (x==7) enemyval-=40;
-									else enemyval-=20;                                                                        
-								}
-							}
-						}
-					}
-				}
-
-			if (enemyval == 0) return 100000 + level*level;
-			else if (myval == 0) return -100000 - level*level;
-			return (myval - enemyval);
-		}
-
-		public int LEVELS=2;
 
 		//public event PlayDelegate OnPlay;
 		public void Play(IGameStateForPlayer info)
@@ -248,7 +180,7 @@ namespace GameLogic
 			{
 				try {
 //					DateTime begintime = DateTime.Now;
-					SelectMove(board, this.Color, LEVELS+(int)this.Color,Int32.MinValue,Int32.MaxValue);
+					SelectMove(board, this.Color, MaxSearchDepth,Int32.MinValue,Int32.MaxValue);
 //					DateTime endtime = DateTime.Now;
 //					TimeSpan span = endtime - begintime;
 //					System.Windows.Forms.MessageBox.Show(span.ToString());
@@ -256,7 +188,7 @@ namespace GameLogic
 				}catch(Exception ex) {
 						MessageBox.Show(ex.Message);
 				}
-				this.MakeAMove(sMove);
+				this.MakeAMove(selectedMove);
 			}
 			else
 				throw new ArgumentException();
@@ -273,8 +205,7 @@ namespace GameLogic
 			
 		}
 
-		public event GamesPackage.PerformMove OnPerformMove;
-
+		public event PerformMove OnPerformMove;
 		public event InvalidMoveDelegate OnInvalidMove;
 		public void InvalidMove(IMove move)
 		{
