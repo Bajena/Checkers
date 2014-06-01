@@ -1,4 +1,6 @@
 ﻿using System.Collections;
+using System.Collections.Generic;
+using System.Drawing;
 using GameLogic.Abstract;
 
 namespace GameLogic
@@ -33,16 +35,16 @@ namespace GameLogic
         /// <returns></returns>
         public abstract bool CanEat(CheckersPiece piece);
 
-        public abstract bool CanMakeMove(CheckersMove move);
+        //public abstract bool CanMakeMove(CheckersMove move);
 
-        public abstract ArrayList PossibleMoves
+        public abstract IList<CheckersMove> PossibleMoves
         {
             get;
         }
 
         #region PossiblePaths
 
-        protected abstract System.Drawing.Point[] IncMov { get; }
+        protected abstract Point[] IncMov { get; }
 
         public virtual BoardPosition[][] PossiblePaths
         {
@@ -60,7 +62,7 @@ namespace GameLogic
         protected ArrayList PossibleMovements(bool eat)
         {
             int countMovement = 0;
-            ArrayList listToFill = new ArrayList();
+            var possibleMovements = new ArrayList();
 
             for (int i = 0; i < IncMov.Length; i++)
             {
@@ -68,7 +70,7 @@ namespace GameLogic
                 ArrayList path = MovementInDirection(IncMov[i], ref outOfBoard);
 
                 if (!eat && path != null && path.Count > 0)
-                    this.Restriction1(listToFill, path, new BoardPosition(this.X, this.Y), ref countMovement);
+                    this.Restriction1(possibleMovements, path, new BoardPosition(this.X, this.Y), ref countMovement);
                 if (outOfBoard) continue;
 
                 if (!outOfBoard && path != null)
@@ -77,26 +79,26 @@ namespace GameLogic
                         ? (new BoardPosition(this.X + IncMov[i].X, this.Y + IncMov[i].Y))
                         : (new BoardPosition(((BoardPosition)path[path.Count - 1]).X + IncMov[i].X, ((BoardPosition)path[path.Count - 1]).Y + IncMov[i].Y));
 
-                    if (!this._ParentBoard.IsInsideBoard(f.X, f.Y)) continue;
-                    CheckersPiece piece = this._ParentBoard.GetPieceAt(f.X, f.Y) as CheckersPiece;
+                    if (!this.ParentBoard.IsInsideBoard(f.X, f.Y)) continue;
+                    CheckersPiece piece = this.ParentBoard.GetPieceAt(f.X, f.Y) as CheckersPiece;
 
                     if (piece.Color != this.Color)
                     {
                         BoardPosition c = new BoardPosition(f.X + IncMov[i].X, f.Y + IncMov[i].Y);
 
-                        if ((this._ParentBoard.IsInsideBoard(c.X, c.Y) && this._ParentBoard.IsEmptyCell(c.X, c.Y)))
+                        if ((this.ParentBoard.IsInsideBoard(c.X, c.Y) && this.ParentBoard.IsEmptyCell(c.X, c.Y)))
                         {
-                            this._ParentBoard.RemovePiece(f);
+                            this.ParentBoard.RemovePiece(f);
                             BoardPosition myPosition = new BoardPosition(this.X, this.Y);
-                            this._ParentBoard.MovePieceTo(this, c.X, c.Y);
+                            this.ParentBoard.MovePieceTo(this, c.X, c.Y);
 
                             ArrayList tmp = this.PossibleMovements(true);
                             this.ConfigurePath(tmp, myPosition);
                             foreach (ArrayList al in tmp) 
-                                listToFill.Add(al);
+                                possibleMovements.Add(al);
 
-                            this._ParentBoard.MovePieceTo(this, myPosition.X, myPosition.Y);
-                            this._ParentBoard.PutPieceAt(f.X, f.Y, piece);
+                            this.ParentBoard.MovePieceTo(this, myPosition.X, myPosition.Y);
+                            this.ParentBoard.PutPieceAt(f.X, f.Y, piece);
 
                             countMovement = (tmp.Count > 0) ? countMovement + 1 : countMovement;
                             continue;
@@ -106,9 +108,9 @@ namespace GameLogic
             }
 
             if (countMovement == 0)
-                listToFill.Add(new ArrayList(new BoardPosition[] { new BoardPosition(this.X, this.Y) }));
+                possibleMovements.Add(new ArrayList(new BoardPosition[] { new BoardPosition(this.X, this.Y) }));
 
-            return listToFill;
+            return possibleMovements;
         }
 
 

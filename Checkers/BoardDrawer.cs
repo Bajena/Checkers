@@ -44,10 +44,7 @@ namespace Checkers
             int cellWidth = width / 8;
             int cellHeight = height / 8;
 
-            Rectangle originalRect = new Rectangle(0, 0, 32, 32);
             bool White = false;
-            Image cellimage = null;
-            Image PieceImage = null;
 
             for (int i = 0; i < 8; i++)
             {

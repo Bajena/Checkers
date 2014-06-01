@@ -42,6 +42,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Abstract\Board.cs" />
+    <Compile Include="AreaBoardEvaluator.cs" />
     <Compile Include="BoardPosition.cs" />
     <Compile Include="CheckersBoard.cs" />
     <Compile Include="CheckersModerator.cs" />

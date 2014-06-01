@@ -1,10 +1,14 @@
 using System;
+using System.Linq;
 using GameLogic.Abstract;
 
 namespace GameLogic
 {
 	public class CheckersModerator : Moderator
 	{
+
+        int _whitePieces = 12;
+        int _blackPieces = 12;
 
 		public CheckersModerator(CheckersBoard board, CheckersPlayer whiteplayer, CheckersPlayer blackplayer) : base(new IPlayer[2]{whiteplayer,blackplayer})
 		{
@@ -64,8 +68,8 @@ namespace GameLogic
 						cx = GetCloser(cx,next.X);
 						cy = GetCloser(cy,next.Y);
 						bool removed = MyBoard.RemovePiece(cx,cy);
-						if (removed && (piece.Color == PieceColor.Black)) white--;
-						else if (removed && (piece.Color == PieceColor.White)) black--;
+						if (removed && (piece.Color == PieceColor.Black)) _whitePieces--;
+						else if (removed && (piece.Color == PieceColor.White)) _blackPieces--;
 
 					}
 				}
@@ -89,63 +93,49 @@ namespace GameLogic
 			}
 		}
 
-		public override bool isValidMove(IPlayer player, IMove move)
+		public override bool IsValidMove(IPlayer player, IMove move)
 		{
-			CheckersBoard MyBoard = (CheckersBoard)this.CurrentGameState;
-			CheckersMove MyMove = (CheckersMove)move;
-			CheckersPlayer MyPlayer = (CheckersPlayer)player;
-			CheckersPiece piece = (CheckersPiece)MyBoard.GetPieceAt((BoardPosition)MyMove.MovePath[0]);
+			var checkersBoard = (CheckersBoard)CurrentGameState;
+			var checkersMove = (CheckersMove)move;
+			var checkersPlayer = (CheckersPlayer)player;
+			var startPiece = (CheckersPiece)checkersBoard.GetPieceAt(checkersMove.MovePath[0]);
 
-			if (piece==null) return false;
-			if (piece.Color != MyPlayer.Color) return false;
+			if (startPiece==null) return false;
+			if (startPiece.Color != checkersPlayer.Color) return false;
 			
-			int max=0;
+			int maxEat=0;
 			bool eatMove=false;
 
-			for(int x=0; x<MyBoard.Width; x++)
-				for(int y=0; y<MyBoard.Height; y++) {
-					CheckersPiece aux=MyBoard.GetPieceAt(x, y) as CheckersPiece;
-					if(aux!=null && aux.Color==piece.Color) {
-						System.Collections.ArrayList list=aux.PossibleMoves;
-						if(list.Count>0) {
-							CheckersMove move2=list[0] as CheckersMove;
-							if(max < move2.MovePath.Length) {
-								max=move2.MovePath.Length;
-								//System.Windows.Forms.MessageBox.Show("Max="+max);
-							}
-							if(move2.EatMove)
-								eatMove=true;
-						}
-					}
-
-				}
+		    foreach (var piece in checkersBoard.GetPiecesOfColor(startPiece.Color))
+		    {
+                var possibleMoves = piece.PossibleMoves;
+                if (possibleMoves.Count > 0)
+                {
+                    var otherMove = possibleMoves[0] as CheckersMove;
+                    if (maxEat < otherMove.MovePath.Length)
+                    {
+                        maxEat = otherMove.MovePath.Length;
+                        //System.Windows.Forms.MessageBox.Show("Max="+max);
+                    }
+                    if (otherMove.EatMove)
+                        eatMove = true;
+                }
+		    }
 
 			//System.Windows.Forms.MessageBox.Show("Must eat: "+eatMove+" It eat:"+MyMove.EatMove);
 			//System.Windows.Forms.MessageBox.Show("Max="+max+" move="+MyMove.MovePath.Length);
-			bool canMakeIt=Contains(piece.PossibleMoves, MyMove);//bool canMakeIt=piece.CanMakeMove(MyMove);
+			bool isPossible = startPiece.PossibleMoves.Cast<CheckersMove>().Contains(checkersMove);
 			//System.Windows.Forms.MessageBox.Show("Can Make It: "+canMakeIt);
-			return eatMove==MyMove.EatMove && MyMove.MovePath.Length==max && canMakeIt;
+			return 
+                eatMove==checkersMove.EatMove && 
+                checkersMove.MovePath.Length==maxEat && 
+                isPossible;
 		}
-
-		protected bool Contains(System.Collections.ArrayList list, CheckersMove move)
-		{
-			//System.Windows.Forms.MessageBox.Show(list.Count+"");
-			foreach(CheckersMove m in list)
-			{
-				//System.Windows.Forms.MessageBox.Show(m.ToString()+'\n'+move.ToString());
-				if(m.Equals(move))
-					return true;
-			}
-			return false;
-		}
-		
-		int white = 12;
-		int black = 12;
-
+        
 		public override bool isGameFinished()
 		{
 			CheckersBoard board = (CheckersBoard)_CurrentGameState;
-			CheckersPlayer player=(CheckersPlayer)this.CurrentPlayer;
+			CheckersPlayer player=(CheckersPlayer)CurrentPlayer;
 			//return (white == 0 || black == 0);
 			return board.RightMoves(player.Color).Count==0;
 		

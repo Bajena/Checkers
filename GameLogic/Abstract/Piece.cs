@@ -4,61 +4,21 @@ namespace GameLogic.Abstract
 {
     public abstract class Piece : ICloneable
     {
-        internal protected int _X;
-        internal protected int _Y;
+        public int X { get; set; }
 
-        public int X
-        {
-            get
-            {
-                return _X;
-            }
-            set
-            {
-                _X = value;
-            }
-        }
+        public int Y { get; set; }
 
-        public int Y
-        {
-            get
-            {
-                return _Y;
-            }
-            set
-            {
-                _Y = value;
-            }
-        }
-
-        protected Board _ParentBoard;
-
-        public Board ParentBoard
-        {
-            get
-            {
-                return _ParentBoard;
-            }
-            set
-            {
-                if (value != null) _ParentBoard = value;
-            }
-        }
+        public Board ParentBoard { get; set; }
 
         public Piece(Board parent, int x, int y)
         {
-            this._X = x;
-            this._Y = y;
-            _ParentBoard = parent;
+            this.X = x;
+            this.Y = y;
+            ParentBoard = parent;
         }
 
         public abstract bool CanMoveTo(int newx, int newy);
-
-        public bool CanMoveTo(BoardPosition newPos)
-        {
-            return CanMoveTo(newPos.X, newPos.Y);
-        }
-
+        
         public override bool Equals(object obj)
         {
             if (!(obj is Piece)) return false;

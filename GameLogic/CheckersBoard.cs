@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using GameLogic.Abstract;
 
 namespace GameLogic
@@ -18,10 +19,23 @@ namespace GameLogic
 		{
 		}
 
+	    public List<CheckersPiece> GetPiecesOfColor(PieceColor color)
+	    {
+	       var pieces = new List<CheckersPiece>();
+
+	        foreach (var piece in _BoardMatrix)
+	        {
+	            if (piece!=null && (piece as CheckersPiece).Color==color)
+                    pieces.Add((CheckersPiece) piece);
+	        }
+
+	        return pieces;
+	    }
+
 		public ArrayList RightMoves(PieceColor color)
 		{
-			System.Collections.ArrayList moves=new System.Collections.ArrayList();
-			System.Collections.ArrayList moves2=new System.Collections.ArrayList();
+			var moves=new ArrayList();
+			var moves2=new ArrayList();
  
 			//getting all the moves
 			bool eatMove=false;

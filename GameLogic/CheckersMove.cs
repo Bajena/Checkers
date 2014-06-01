@@ -51,20 +51,20 @@ namespace GameLogic
 				return 1;
 		}
 
-		public static bool IsEatMove(CheckersBoard board, BoardPosition[] pos)
+		public static bool IsEatMove(CheckersBoard board, BoardPosition[] movePath)
 		{
-			if(board!=null && pos!=null && pos.Length>=2)
+			if(board!=null && movePath!=null && movePath.Length>=2)
 			{
-				int x1=pos[0].X;
-				int y1=pos[0].Y;
+				int x1=movePath[0].X;
+				int y1=movePath[0].Y;
 				//System.Windows.Forms.MessageBox.Show(x1+" "+y1);
 				if(board.IsInsideBoard(x1, y1))
 				{
 					CheckersPiece piece=board.GetPieceAt(x1, y1) as CheckersPiece;
 					if(piece!=null)
 					{
-						int x2=pos[1].X;
-						int y2=pos[1].Y;
+						int x2=movePath[1].X;
+						int y2=movePath[1].Y;
 						//System.Windows.Forms.MessageBox.Show(x2+" "+y2);
 						if(board.IsInsideBoard(x2, y2))
 						{

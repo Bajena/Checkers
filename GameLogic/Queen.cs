@@ -1,6 +1,8 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Drawing;
+using GameLogic.Abstract;
 
 namespace GameLogic
 {
@@ -18,7 +20,7 @@ namespace GameLogic
 		int orgX, orgY;
         public static bool AmericanRules = false;
 	    
-		protected void EatMoves(int x, int y, ArrayList moves)
+		protected void EatMoves(int x, int y, IList<CheckersMove> moves)
 		{
 			bool foodFound=false;
 
@@ -83,7 +85,7 @@ namespace GameLogic
 			aux.RemoveAt(aux.Count-1);
 		}
 
-		protected void EatMoves(ArrayList moves)
+		protected void EatMoves(IList<CheckersMove> moves)
 		{
 			orgX=this.X;
 			orgY=this.Y;
@@ -91,7 +93,7 @@ namespace GameLogic
 			EatMoves(this.X, this.Y, moves);
 		}
 
-		protected void SingleMoves(ArrayList moves)
+		protected void SingleMoves(IList<CheckersMove> moves)
 		{
 			for(int i=0; i<4; i++)
 			{
@@ -116,11 +118,11 @@ namespace GameLogic
 			}
 		}
 
-		public override ArrayList PossibleMoves
+		public override IList<CheckersMove> PossibleMoves
 		{
 			get
 			{
-				ArrayList moves=new ArrayList();
+				var moves=new List<CheckersMove>();
 				EatMoves(moves);
 				if(moves.Count==0)
 					SingleMoves(moves);
@@ -161,7 +163,7 @@ namespace GameLogic
 			for(int i =0; i<IncMov.Length; i++)
 			{
 				BoardPosition p = new BoardPosition(piece.X+IncMov[i].X, piece.Y+IncMov[i].Y);
-				if (this._ParentBoard.IsInsideBoard(p.X, p.Y) && this._ParentBoard.IsEmptyCell(p.X, p.Y) && CanMoveTo(p.X, p.Y, possiblePos)) return true;
+				if (this.ParentBoard.IsInsideBoard(p.X, p.Y) && this.ParentBoard.IsEmptyCell(p.X, p.Y) && CanMoveTo(p.X, p.Y, possiblePos)) return true;
 			}
 			return false;
 		}
@@ -171,73 +173,31 @@ namespace GameLogic
 			return this.CanMoveTo(newx, newy, this.PossiblePaths);
 		}
 		
-		public override bool CanMakeMove(CheckersMove move) 
-		{
-			BoardPosition[][] posiblePositions = this.PossiblePaths;
+        //public override bool CanMakeMove(CheckersMove move) 
+        //{
+        //    BoardPosition[][] posiblePositions = this.PossiblePaths;
 						
-			foreach (BoardPosition[] path in posiblePositions)
-			{
-				if (path!=null && IsIncluded(move.MovePath,path)) return true;
-			}			
-			return false;
-
-			/***************** El siguiente codigo no esta terminado aun ************
-			 * *************** Estaria sustituyendo al codigo de arriba *************/
-			//Algoritmo: Ciclo por los movimientos simulando moverse para ver si es valido
-			//
-			//			if ( move==null || move.MovePath==null || move.MovePath.Length==0 || 
-			//				!(this.X==move.MovePath[0].X && this.Y==move.MovePath[0].Y) ) return false;
-			//			int dx = 0;
-			//			int dy = 0;
-			//			BoardPosition p = null;
-			//			BoardPosition myPos = new BoardPosition(this.X,this.Y);
-			//
-			//			for(int i =0; i<move.MovePath.Length; i++){
-			//				p = move.MovePath[i];
-			//				dx = Math.Sign(p.X-this.X);
-			//				dy = Math.Sign(p.Y=this.Y);
-			//				bool found = false;
-			//
-			//				BoardPosition f = this.FoundInDirecction(p.X, p.Y,new System.Drawing.Point(dx, dy),found);
-			//				if (!found){
-			//					//Pare la busqueda en esa direccion porque encontre otra ficha
-			//					f = (f!=null) 
-			//						? (new BoardPosition(this.X+dx, this.Y+dy))
-			//						: (new BoardPosition(f.X+dx, f.Y+dy));
-			//					
-			//					//?????
-			//					if (!this._ParentBoard.isInsideBoard(f.X,f.Y) || ) continue;
-			//					
-			//					CheckersPiece piece = this._ParentBoard.GetPieceAt(f.X, f.Y) as CheckersPiece;
-			//						
-			//					//La pieza es de color contrario, intentare comer
-			//					if (piece.Color!=this.Color){
-			//						BoardPosition c = new BoardPosition(f.X+IncMov[i].X, f.Y+IncMov[i].Y);
-			//						
-			//						if ((this._ParentBoard.isInsideBoard(c.X, c.Y) && this._ParentBoard.isEmptyCell(c.X, c.Y))){
-			//							// Me puedo comer a 'piece'
-			//				
-			//				}
-			//				
-			//				BoardPosition c = new BoardPosition(f.X+IncMov[i].X, f.Y+IncMov[i].Y);
-			//				
-			//			}
-		}
+        //    foreach (BoardPosition[] path in posiblePositions)
+        //    {
+        //        if (path!=null && IsIncluded(move.MovePath,path)) return true;
+        //    }			
+        //    return false;
+        //}
 	
 
-		protected override System.Collections.ArrayList MovementInDirection(System.Drawing.Point increment ,ref bool outOfBoard)
+		protected override ArrayList MovementInDirection(Point increment ,ref bool outOfBoard)
 		{
-			System.Collections.ArrayList path = new System.Collections.ArrayList();
-			int top = Math.Min((Math.Sign(increment.X)<0)?this.X:(this._ParentBoard.Width-this.X) , (Math.Sign(increment.Y)<0)?this.Y:(this._ParentBoard.Height-this.Y));
+			var path = new ArrayList();
+			int top = Math.Min((Math.Sign(increment.X)<0)?this.X:(this.ParentBoard.Width-this.X) , (Math.Sign(increment.Y)<0)?this.Y:(this.ParentBoard.Height-this.Y));
 			bool foundPiece = false;
 			BoardPosition pos = null;
 			
 			for(int i=1; i<=top; i++)
 			{
 				pos = new BoardPosition(this.X+i*increment.X,this.Y+i*increment.Y);
-				if (this._ParentBoard.IsInsideBoard(pos.X,pos.Y)) 
+				if (this.ParentBoard.IsInsideBoard(pos.X,pos.Y)) 
 				{
-					if(!this._ParentBoard.IsEmptyCell(pos.X,pos.Y))
+					if(!this.ParentBoard.IsEmptyCell(pos.X,pos.Y))
 					{
 						foundPiece = true;
 						break;
@@ -277,7 +237,7 @@ namespace GameLogic
 		
 		protected virtual bool CanMoveTo(int newx, int newy, BoardPosition[][] posiblePositions) 
 		{
-			if (!this._ParentBoard.IsInsideBoard(newx, newy)) return false;
+			if (!this.ParentBoard.IsInsideBoard(newx, newy)) return false;
 			
 			foreach (BoardPosition[] path in posiblePositions)
 			{
@@ -303,23 +263,23 @@ namespace GameLogic
 					? (new BoardPosition(this.X+IncMov[i].X, this.Y+IncMov[i].Y))
 					: (new BoardPosition(f.X+IncMov[i].X, f.Y+IncMov[i].Y));
 					
-				if (!this._ParentBoard.IsInsideBoard(f.X,f.Y)) continue;
-				CheckersPiece piece = this._ParentBoard.GetPieceAt(f.X, f.Y) as CheckersPiece;
+				if (!this.ParentBoard.IsInsideBoard(f.X,f.Y)) continue;
+				CheckersPiece piece = this.ParentBoard.GetPieceAt(f.X, f.Y) as CheckersPiece;
 						
 				if (piece.Color!=this.Color)
 				{
 					BoardPosition c = new BoardPosition(f.X+IncMov[i].X, f.Y+IncMov[i].Y);
 						
-					if ((this._ParentBoard.IsInsideBoard(c.X, c.Y) && this._ParentBoard.IsEmptyCell(c.X, c.Y)))
+					if ((this.ParentBoard.IsInsideBoard(c.X, c.Y) && this.ParentBoard.IsEmptyCell(c.X, c.Y)))
 					{
-						this._ParentBoard.RemovePiece(f);
+						this.ParentBoard.RemovePiece(f);
 						BoardPosition myPosition = new BoardPosition(this.X, this.Y);
-						this._ParentBoard.MovePieceTo(this, c.X,c.Y);
+						this.ParentBoard.MovePieceTo(this, c.X,c.Y);
 								
 						if (this.CanMoveTo(newx, newy ,true))return true;
 										
-						this._ParentBoard.MovePieceTo(this, myPosition.X, myPosition.Y);
-						this._ParentBoard.PutPieceAt(f.X, f.Y,piece);
+						this.ParentBoard.MovePieceTo(this, myPosition.X, myPosition.Y);
+						this.ParentBoard.PutPieceAt(f.X, f.Y,piece);
 					}
 				}
 			}
@@ -330,13 +290,13 @@ namespace GameLogic
 		
 		protected BoardPosition FoundInDirecction(int X, int Y, System.Drawing.Point increment, ref bool found)
 		{
-			int top = Math.Min((Math.Sign(increment.X)<0)?this.X:(this._ParentBoard.Width-this.X) , (Math.Sign(increment.Y)<0)?this.Y:(this._ParentBoard.Height-this.Y));
+			int top = Math.Min((Math.Sign(increment.X)<0)?this.X:(this.ParentBoard.Width-this.X) , (Math.Sign(increment.Y)<0)?this.Y:(this.ParentBoard.Height-this.Y));
 			BoardPosition pos = null;
 			
 			for(int i=1; i<=top; i++)
 			{
 				pos = new BoardPosition(this.X+i*increment.X,this.Y+i*increment.Y);
-				if (this._ParentBoard.IsInsideBoard(pos.X,pos.Y) && this._ParentBoard.IsEmptyCell(pos.X, pos.Y))
+				if (this.ParentBoard.IsInsideBoard(pos.X,pos.Y) && this.ParentBoard.IsEmptyCell(pos.X, pos.Y))
 				{
 					if (pos.X==X && pos.Y==Y) 
 					{
@@ -347,7 +307,7 @@ namespace GameLogic
 				else 
 				{
 					found = false;
-					return (this._ParentBoard.IsInsideBoard(pos.X,pos.Y)) ? pos : null;
+					return (this.ParentBoard.IsInsideBoard(pos.X,pos.Y)) ? pos : null;
 				}
 			}
 			return null;

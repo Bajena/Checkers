@@ -155,6 +155,7 @@ namespace GameLogic.Abstract
 				}
 				catch(Exception ex)
 				{
+				    throw;
 				}
 			}
 			
@@ -188,7 +189,7 @@ namespace GameLogic.Abstract
 		/// <param name="move"></param>
 		private void player_OnPerformMove(IPlayer sender, IMove move)
 		{
-			if (isValidMove(sender,move)) 
+			if (IsValidMove(sender,move)) 
 			{
 				//Make the move
 				PerformMove(move);
@@ -286,7 +287,7 @@ namespace GameLogic.Abstract
 		/// <param name="player">the player that want to make the move</param>
 		/// <param name="move">the move to be performed</param>
 		/// <returns></returns>
-		public abstract bool isValidMove(IPlayer player , IMove move);
+		public abstract bool IsValidMove(IPlayer player , IMove move);
 
 
 		/// <summary>
@@ -367,11 +368,4 @@ namespace GameLogic.Abstract
 
 		#endregion
 	}
-
-
-	
-	
-
-	
-
 }

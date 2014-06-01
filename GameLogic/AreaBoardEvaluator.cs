@@ -7,7 +7,7 @@ using GameLogic.Abstract;
 
 namespace GameLogic
 {
-    internal class AreaBoardEvaluator : IBoardEvaluator
+    public class AreaBoardEvaluator : IBoardEvaluator
     {
         private readonly double _pawnStrengthArea1;
         private readonly double _queenStrengthArea1;

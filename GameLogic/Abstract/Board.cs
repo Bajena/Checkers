@@ -105,8 +105,8 @@ namespace GameLogic.Abstract
             if (IsInsideBoard(x, y))
             {
                 _BoardMatrix[x, y] = p;
-                p._X = x;
-                p._Y = y;
+                p.X = x;
+                p.Y = y;
                 p.ParentBoard = this;
             }
             else throw new Exception("Out of the board");

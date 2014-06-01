@@ -145,7 +145,7 @@ namespace GameLogic
 						}
 						else if(max==eval)
 							{
-								if((currentSearchDepth==MaxSearchDepth)/* && (r.Next(9)%2==0)*/)  
+								if((currentSearchDepth==MaxSearchDepth) && (r.Next(9)%2==0))  
 								{
 									selectedMove=move;
 									//System.Windows.Forms.MessageBox.Show("Got a move "+selectedMove + " currentSearchDepth :"+MaxSearchDepth);
