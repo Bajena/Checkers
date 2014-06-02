@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using GameLogic.Abstract;
 
 namespace GameLogic
@@ -23,7 +24,7 @@ namespace GameLogic
 	    {
 	       var pieces = new List<CheckersPiece>();
 
-	        foreach (var piece in _BoardMatrix)
+	        foreach (var piece in BoardMatrix)
 	        {
 	            if (piece!=null && (piece as CheckersPiece).Color==color)
                     pieces.Add((CheckersPiece) piece);
@@ -32,42 +33,35 @@ namespace GameLogic
 	        return pieces;
 	    }
 
-		public ArrayList RightMoves(PieceColor color)
+		public IList<CheckersMove> RightMoves(PieceColor color)
 		{
-			var moves=new ArrayList();
-			var moves2=new ArrayList();
- 
-			//getting all the moves
-			bool eatMove=false;
-			int length=0;
+			var moves=new List<CheckersMove>();
 
-			for(int x=0; x<this.Width; x++)
-				for(int y=0; y<this.Height; y++) {
-					CheckersPiece piece=this.GetPieceAt(x, y) as CheckersPiece;
-					if(piece!=null && piece.Color==color)
-						foreach(CheckersMove move in piece.PossibleMoves) {
-							moves.Add(move);
-							if(move.EatMove)
-								eatMove=move.EatMove;
-							if(move.MovePath.Length>length)
-								length=move.MovePath.Length;
-						}
+		    //getting all the moves
+			bool eatMoveExists=false;
+			int maxLength = 0;
+
+		    foreach (var checkersPiece in GetPiecesOfColor(color))
+		    {
+		        foreach(CheckersMove move in checkersPiece.PossibleMoves) {
+					moves.Add(move);
+		            if (move.EatMove)
+		                eatMoveExists = true;
+
+					if(move.MovePath.Length>maxLength)
+						maxLength=move.MovePath.Length;
 				}
+		    }
 
 			//looking for right moves...
-			for(int l=0; l<moves.Count; l++) {
-				CheckersMove m2=moves[l] as CheckersMove;
-				if(m2!=null && eatMove==m2.EatMove && length==m2.MovePath.Length)
-					moves2.Add(m2);
-			}
-			return moves2;
+		    return moves.Where(move => eatMoveExists == move.EatMove && maxLength == move.MovePath.Length).ToList();
 		}
 
 		public void Clear() 
 		{
 			WhiteLog.Clear();
 			BlackLog.Clear();
-			_BoardMatrix = new Piece[8,8];
+			BoardMatrix = new Piece[8,8];
 		}
 
 		public override void InitializeBoard()

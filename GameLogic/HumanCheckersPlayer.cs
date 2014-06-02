@@ -48,18 +48,18 @@ namespace GameLogic
 
 		
 		public event PlayDelegate OnPlay;
-		public void Play(IGameStateForPlayer info)
+		public void Play(IGameStateForPlayer gameState)
 		{
 			if (OnPlay!=null) 
 			{
-				OnPlay(info);			
+				OnPlay(gameState);			
 			}
 		}
 
 		public event GameOverDelegate OnGameOver;
-		public void GameOver(bool winner)
+		public void GameOver(PlayerGameResult result)
 		{
-			if (OnGameOver!=null) OnGameOver(winner);
+			if (OnGameOver!=null) OnGameOver(result);
 		}
 
 		public void GameHalted(Exception cause)

@@ -6,11 +6,22 @@ namespace GameLogic
 {
 	public class CheckersModerator : Moderator
 	{
-
         int _whitePieces = 12;
         int _blackPieces = 12;
 
-		public CheckersModerator(CheckersBoard board, CheckersPlayer whiteplayer, CheckersPlayer blackplayer) : base(new IPlayer[2]{whiteplayer,blackplayer})
+	    private int _movesWithoutChange = 0;
+	    private const int MaxMovesWithoutChange = 50;
+
+	    protected bool IsDraw
+	    {
+	        get
+	        {
+	            return _movesWithoutChange >= MaxMovesWithoutChange;
+	            
+	        }
+	    }
+
+	    public CheckersModerator(CheckersBoard board, CheckersPlayer whiteplayer, CheckersPlayer blackplayer) : base(new IPlayer[2]{whiteplayer,blackplayer})
 		{
 			this.CurrentGameState = board;
 		}
@@ -28,67 +39,78 @@ namespace GameLogic
 
 		}
 
-		public override bool IsWinner(IPlayer player)
+		public override PlayerGameResult GetPlayerGameResult(IPlayer player)
 		{
-			if (!isGameFinished()) return false;
-			CheckersPlayer myplayer = (CheckersPlayer)player;
-			CheckersBoard MyBoard = (CheckersBoard)CurrentGameState;
-			return (MyBoard.RightMoves(myplayer.Color).Count>0);
+			if (!isGameFinished()) 
+                return PlayerGameResult.NotEnded;
+			var checkersPlayer = (CheckersPlayer)player;
+			var currentGameState = (CheckersBoard)CurrentGameState;
+
+		    if (IsDraw)
+		        return PlayerGameResult.Draw;
+
+		    return (currentGameState.RightMoves(checkersPlayer.Color).Count > 0)
+		        ? PlayerGameResult.Win
+		        : PlayerGameResult.Lose;
 		}
 
 		private int GetCloser(int k, int goal) 
 		{
-			if (k<goal) return k+1;
-			else if (k>goal) return k-1;
-			else return k;
+			if (k<goal) 
+                return k+1;
+		    if (k>goal) 
+                return k-1;
+		    return k;
 		}
 
 		protected override void PerformMove(IGameState state, IMove move)
 		{
-			CheckersBoard MyBoard = (CheckersBoard)state;
-			CheckersMove MyMove = (CheckersMove)move;
-			CheckersPiece piece = (CheckersPiece)MyBoard.GetPieceAt((BoardPosition)MyMove.MovePath[0]);
-			if (piece!=null) 
+			CheckersBoard board = (CheckersBoard)state;
+			CheckersMove checkersMove = (CheckersMove)move;
+			CheckersPiece startPiece = (CheckersPiece)board.GetPieceAt(checkersMove.MovePath[0]);
+
+			if (startPiece!=null) 
 			{
-				MyBoard.RemovePiece(piece.X,piece.Y);
+				board.RemovePiece(startPiece.X,startPiece.Y);
 				
-				//Clear all piece in the middle of the path (assuming that this method is called when the move is valid.
-				for(int i=0;i<MyMove.MovePath.Length - 1; i++) 
+				for(int i=0;i<checkersMove.MovePath.Length - 1; i++) 
 				{
-					//get the current position
-                    BoardPosition current = (BoardPosition)MyMove.MovePath[i];
-					BoardPosition next =  (BoardPosition)MyMove.MovePath[i+1];
+                    var currentPosition = checkersMove.MovePath[i];
+					var nextPosition =  checkersMove.MovePath[i+1];
 					
-					int cx = current.X;
-					int cy = current.Y;
+					int currentX = currentPosition.X;
+					int currentY = currentPosition.Y;
 					
-					//move close to reach the next position
-					while(!(cx==next.X && cy == next.Y)) 
+					while(!(currentX==nextPosition.X && currentY == nextPosition.Y)) 
 					{
-						cx = GetCloser(cx,next.X);
-						cy = GetCloser(cy,next.Y);
-						bool removed = MyBoard.RemovePiece(cx,cy);
-						if (removed && (piece.Color == PieceColor.Black)) _whitePieces--;
-						else if (removed && (piece.Color == PieceColor.White)) _blackPieces--;
+						currentX = GetCloser(currentX,nextPosition.X);
+						currentY = GetCloser(currentY,nextPosition.Y);
+						bool removed = board.RemovePiece(currentX,currentY);
+
+						if (removed && (startPiece.Color == PieceColor.Black)) _whitePieces--;
+						else if (removed && (startPiece.Color == PieceColor.White)) _blackPieces--;
 
 					}
 				}
 
-				BoardPosition pos=MyMove.MovePath[MyMove.MovePath.Length-1];
+				BoardPosition pos=checkersMove.MovePath[checkersMove.MovePath.Length-1];
 
-				if(pos.Y==0 && piece.Color==PieceColor.White)
+				if(pos.Y==0 && startPiece.Color==PieceColor.White)
 				{
-					//System.Windows.Forms.MessageBox.Show("Queen");
-					MyBoard.PutPieceAt(pos, new Queen(MyBoard, pos.X, pos.Y, PieceColor.White));
+					board.PutPieceAt(pos, new Queen(board, pos.X, pos.Y, PieceColor.White));
 				}
 				else
-					if(pos.Y==7 && piece.Color==PieceColor.Black)
+					if(pos.Y==7 && startPiece.Color==PieceColor.Black)
 				{
-					//System.Windows.Forms.MessageBox.Show("Queen");
-					MyBoard.PutPieceAt(pos, new Queen(MyBoard, pos.X, pos.Y, PieceColor.Black));
+					board.PutPieceAt(pos, new Queen(board, pos.X, pos.Y, PieceColor.Black));
 				}
 				else
-					MyBoard.PutPieceAt((BoardPosition)MyMove.MovePath[MyMove.MovePath.Length-1],piece);
+					board.PutPieceAt((BoardPosition)checkersMove.MovePath[checkersMove.MovePath.Length-1],startPiece);
+
+			    if (checkersMove.EatMove)
+			        _movesWithoutChange = -1;
+
+			    _movesWithoutChange++;
 
 			}
 		}
@@ -115,17 +137,13 @@ namespace GameLogic
                     if (maxEat < otherMove.MovePath.Length)
                     {
                         maxEat = otherMove.MovePath.Length;
-                        //System.Windows.Forms.MessageBox.Show("Max="+max);
                     }
                     if (otherMove.EatMove)
                         eatMove = true;
                 }
 		    }
 
-			//System.Windows.Forms.MessageBox.Show("Must eat: "+eatMove+" It eat:"+MyMove.EatMove);
-			//System.Windows.Forms.MessageBox.Show("Max="+max+" move="+MyMove.MovePath.Length);
 			bool isPossible = startPiece.PossibleMoves.Cast<CheckersMove>().Contains(checkersMove);
-			//System.Windows.Forms.MessageBox.Show("Can Make It: "+canMakeIt);
 			return 
                 eatMove==checkersMove.EatMove && 
                 checkersMove.MovePath.Length==maxEat && 
@@ -134,15 +152,11 @@ namespace GameLogic
         
 		public override bool isGameFinished()
 		{
-			CheckersBoard board = (CheckersBoard)_CurrentGameState;
+			CheckersBoard board = (CheckersBoard)CurrentGameState;
 			CheckersPlayer player=(CheckersPlayer)CurrentPlayer;
-			//return (white == 0 || black == 0);
-			return board.RightMoves(player.Color).Count==0;
+
+			return board.RightMoves(player.Color).Count==0 || IsDraw;
 		
 		}
-
-
-
-
 	}
 }

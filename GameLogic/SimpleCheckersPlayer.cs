@@ -108,7 +108,7 @@ namespace GameLogic
 
 		protected double SelectMove(CheckersBoard board, PieceColor color, int currentSearchDepth, double alpha, double beta)
 		{
-			System.Collections.ArrayList moves=board.RightMoves(color);
+			var moves=board.RightMoves(color);
 			
 			if(currentSearchDepth==0 || moves.Count==0)
 				return _boardEvaluator.Eval(board, currentSearchDepth,Color);
@@ -116,14 +116,14 @@ namespace GameLogic
 			{
 				//if have only one oportunnity the return this one and save time
 				if (currentSearchDepth == MaxSearchDepth && (moves.Count == 1)) {
-					selectedMove = moves[0] as CheckersMove;
+					selectedMove = moves[0];
 					return 0;
                 }
                 				
 				double max=(this.Color==color)? double.MinValue: double.MaxValue;
 				for(int i=0;i<moves.Count;i++)
 				{
-					CheckersMove move = moves[i] as CheckersMove;
+					var move = moves[i];
 
 					CheckersBoard newBoard=PerformMove(board, move);
                     
@@ -167,14 +167,14 @@ namespace GameLogic
 		
 
 		//public event PlayDelegate OnPlay;
-		public void Play(IGameStateForPlayer info)
+		public void Play(IGameStateForPlayer gameState)
 		{
 			//if (OnPlay!=null) 
 			//{
-			//	OnPlay(info);			
+			//	OnPlay(gameState);			
 			//}
 
-			CheckersBoard board=info as CheckersBoard;
+			CheckersBoard board=gameState as CheckersBoard;
 		//	System.Windows.Forms.MessageBox.Show((board == null) + "");
 			if(board!=null)
 			{
@@ -195,9 +195,9 @@ namespace GameLogic
 		}
 
 		public event GameOverDelegate OnGameOver;
-		public void GameOver(bool winner)
+        public void GameOver(PlayerGameResult result)
 		{
-			if (OnGameOver!=null) OnGameOver(winner);
+			if (OnGameOver!=null) OnGameOver(result);
 		}
 
 		public void GameHalted(Exception cause)

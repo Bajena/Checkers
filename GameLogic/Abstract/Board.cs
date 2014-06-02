@@ -4,34 +4,18 @@ namespace GameLogic.Abstract
 {
     public abstract class Board
     {
-        protected Piece[,] _BoardMatrix;
+        protected Piece[,] BoardMatrix;
 
-        protected int _height;
-        protected int _width;
+        public int Height { get; protected set; }
 
-        public int Height
-        {
-            get
-            {
-                return _height;
-            }
-        }
-
-        public int Width
-        {
-            get
-            {
-                return _width;
-            }
-        }
+        public int Width { get; protected set; }
 
 
         public Board(int width, int heigth)
         {
-            this._width = width;
-            this._height = heigth;
-            _BoardMatrix = new Piece[width, heigth];
-
+            this.Width = width;
+            this.Height = heigth;
+            BoardMatrix = new Piece[width, heigth];
         }
 
 
@@ -47,12 +31,13 @@ namespace GameLogic.Abstract
         {
             if (!IsInsideBoard(x, y)) return false;
 
-            if (_BoardMatrix[x, y] != null)
+            if (BoardMatrix[x, y] != null)
             {
-                _BoardMatrix[x, y] = null;
+                BoardMatrix[x, y] = null;
                 return true;
             }
-            else return false;
+            
+            return false;
         }
 
 
@@ -79,14 +64,14 @@ namespace GameLogic.Abstract
         public virtual bool IsEmptyCell(int x, int y)
         {
             if (!IsInsideBoard(x, y)) return false;
-            return (_BoardMatrix[x, y] == null);
+            return (BoardMatrix[x, y] == null);
         }
 
         public virtual void MovePieceTo(Piece p, int newx, int newy)
         {
 
-            this.RemovePiece(p);
-            this.PutPieceAt(newx, newy, p);
+            RemovePiece(p);
+            PutPieceAt(newx, newy, p);
 
         }
 
@@ -104,7 +89,7 @@ namespace GameLogic.Abstract
         {
             if (IsInsideBoard(x, y))
             {
-                _BoardMatrix[x, y] = p;
+                BoardMatrix[x, y] = p;
                 p.X = x;
                 p.Y = y;
                 p.ParentBoard = this;
@@ -119,7 +104,7 @@ namespace GameLogic.Abstract
 
         public Piece GetPieceAt(int x, int y)
         {
-            if (IsInsideBoard(x, y)) return _BoardMatrix[x, y];
+            if (IsInsideBoard(x, y)) return BoardMatrix[x, y];
             else return null;
         }
 

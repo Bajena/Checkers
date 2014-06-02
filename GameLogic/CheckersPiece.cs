@@ -7,24 +7,12 @@ namespace GameLogic
 {
     public abstract class CheckersPiece : Piece
     {
-        protected PieceColor _Color;
-        public PieceColor Color
-        {
-            get
-            {
-                return _Color;
-            }
-            set
-            {
-                _Color = value;
-            }
-        }
-
+        public PieceColor Color { get; set; }
 
         public CheckersPiece(CheckersBoard board, int x, int y, PieceColor color)
             : base(board, x, y)
         {
-            this._Color = color;
+            this.Color = color;
 
         }
 

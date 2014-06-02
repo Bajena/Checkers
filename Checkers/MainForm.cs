@@ -5,6 +5,7 @@ using System.Windows.Forms;
 using GameLogic;
 using System.Collections;
 using GameLogic.Abstract;
+using GameLogic.Heuristics;
 
 namespace Checkers
 {
@@ -108,20 +109,25 @@ namespace Checkers
             return false;
         }
 
-        private void white_OnGameOver(bool winner)
+        private void white_OnGameOver(PlayerGameResult result)
         {
             RepaintBoard();
             //System.Threading.Thread.Sleep(100);
             this.Refresh();
+            //MessageBox.Show(result ? "Player 1 Win!" : "Player 2 Win!");
+            
         }
 
-        private void black_OnGameOver(bool winner)
+        private void black_OnGameOver(PlayerGameResult result)
         {
             RepaintBoard();
             //System.Threading.Thread.Sleep(100);
             this.Refresh();
 
-            MessageBox.Show(winner ? "Player 2 Win!" : "Player 1 Win!");
+            if (result == PlayerGameResult.Draw)
+                MessageBox.Show("Draw");
+            else
+                MessageBox.Show(result == PlayerGameResult.Win ? "Player 2 Win!" : "Player 1 Win!");
         }
 
 
@@ -139,7 +145,7 @@ namespace Checkers
             RepaintBoard();
             //MessageBox.Show("White moved");
             this.Refresh();
-            System.Threading.Thread.Sleep(1000);
+            System.Threading.Thread.Sleep(100);
         }
 
         private void white_OnInvalidMove(IMove move)
@@ -160,10 +166,12 @@ namespace Checkers
 
         private void black_OnOtherPlayerMovePerformed(IPlayer player, IMove move)
         {
+            moveButton.Enabled = BlackPlayer is HumanCheckersPlayer;
+
             RepaintBoard();
             //MessageBox.Show("Black moved");
             this.Refresh();
-            System.Threading.Thread.Sleep(1000);
+            System.Threading.Thread.Sleep(100);
         }
 
         private void black_OnInvalidMove(IMove move)
@@ -218,8 +226,11 @@ namespace Checkers
                 //not double cell consecuttively
                 if ((_moves.Count >= 1) && _moves[_moves.Count - 1].Equals(newpos)) return;
 
-                if (_currentPath==null || _currentPath.Count==0)
-                    NewMove(piece,newpos);
+                if (_currentPath == null || _currentPath.Count == 0)
+                {
+                    if (piece!=null)
+                    NewMove(piece, newpos);
+                }
                 else AddMoveToPath(newpos);
             }
 
@@ -323,8 +334,8 @@ namespace Checkers
             _boardDrawer = new BoardDrawer(this.MyBoard);
             _boardDrawer.SelectionColor = Color.Yellow;
 
-            //HumanCheckersPlayer white = new HumanCheckersPlayer(PieceColor.White);
-            SimpleCheckersPlayer white = new SimpleCheckersPlayer(PieceColor.White, new AreaBoardEvaluator());
+            //var white = new HumanCheckersPlayer(PieceColor.White);
+            SimpleCheckersPlayer white = new SimpleCheckersPlayer(PieceColor.White, new PawnStrengthBoardEvaluator());
             white.MaxSearchDepth = 3;
             white.OnPerformMove += white_OnPerformMove;
             //white.OnPlay += white_OnPlay;
@@ -332,7 +343,8 @@ namespace Checkers
             white.OnInvalidMove += white_OnInvalidMove;
             white.OnGameOver += white_OnGameOver;
 
-            SimpleCheckersPlayer black = new SimpleCheckersPlayer(PieceColor.Black, new PawnStrengthBoardEvaluator());
+            var black = new SimpleCheckersPlayer(PieceColor.Black, new SimpleHeuristicBoardEvaluator());
+            //var black = new HumanCheckersPlayer(PieceColor.Black);
             black.MaxSearchDepth = 3;
             black.OnPerformMove += black_OnPerformMove;
             //black.OnPlay+=black_OnPlay;

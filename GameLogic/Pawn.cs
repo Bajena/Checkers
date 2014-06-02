@@ -1,16 +1,20 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using GameLogic.Abstract;
 
 namespace GameLogic
 {
     public class Pawn : CheckersPiece
     {
-        int[] XMov = new int[2] { -1, 1 };
-        int[] YMov = new int[2] { -1, -1 };
+        private int[] XMov;
+        private int[] YMov;
 
-        ArrayList aux;
+        private int[] XEat = { -1, 1, -1, 1 };
+        private int[] YEat = { -1, -1, 1, 1 };
+
+        List<BoardPosition> aux;
 
         protected void EatMoves(int x, int y, List<CheckersMove> moves)
         {
@@ -18,32 +22,49 @@ namespace GameLogic
 
             aux.Add(new BoardPosition(x, y));
 
-            for (int i = 0; i < 2; i++)
+            for (int i = 0; i < XEat.Length; i++)
             {
-                int newX = x + XMov[i];
-                int newY = y + YMov[i];
+                int newX = x + XEat[i];
+                int newY = y + YEat[i];
                 if (this.ParentBoard.IsInsideBoard(newX, newY))
                 {
                     CheckersPiece piece = this.ParentBoard.GetPieceAt(newX, newY) as CheckersPiece;
                     if (piece != null && piece.Color != this.Color)
                     {
-                        int newX2 = newX + XMov[i];
-                        int newY2 = newY + YMov[i];
+                        int newX2 = newX + XEat[i];
+                        int newY2 = newY + YEat[i];
+
+                        if (aux.Count > 1)
+                        {
+                            if (aux[aux.Count - 2].X == newX2 && aux[aux.Count - 2].Y == newY2)
+                            continue;
+                            
+                        } 
+
                         if (this.ParentBoard.IsInsideBoard(newX2, newY2) &&
                             this.ParentBoard.GetPieceAt(newX2, newY2) == null)
                         {
                             wayFound = true;
+
+                            this.ParentBoard.RemovePiece(this);
+                            this.ParentBoard.PutPieceAt(newX2, newY2, this);
+                            this.ParentBoard.RemovePiece(piece);
+
                             EatMoves(newX2, newY2, moves);
+
+                            this.ParentBoard.PutPieceAt(newX, newY, piece);
+                            this.ParentBoard.RemovePiece(this);
+                            this.ParentBoard.PutPieceAt(x, y, this);
                         }
                     }
                 }
             }
 
-            if (!wayFound && (this.X != x || this.Y != y))
+            if (!wayFound && (this.X != aux[0].X || this.Y != aux[0].Y))
             {
                 BoardPosition[] arr = new BoardPosition[aux.Count];
                 for (int j = 0; j < aux.Count; j++)
-                    arr[j] = aux[j] as BoardPosition;
+                    arr[j] = aux[j];
                 moves.Add(new CheckersMove(arr, true));
             }
 
@@ -52,8 +73,8 @@ namespace GameLogic
 
         protected void EatMoves(List<CheckersMove> moves)
         {
-            aux = new ArrayList();
-            EatMoves(this.X, this.Y, moves);
+            aux = new List<BoardPosition>();
+            EatMoves(X, Y, moves);
         }
 
         public override IList<CheckersMove> PossibleMoves
@@ -100,17 +121,23 @@ namespace GameLogic
                     if (((CheckersMove)moves[k]).MovePath.Length != max)
                         moves.RemoveAt(k--);
             }
-            return moves; 
+            return moves;
         }
 
         public Pawn(CheckersBoard board, int x, int y, PieceColor color)
             : base(board, x, y, color)
         {
-            if (color == PieceColor.Black)
+            if (Color == PieceColor.White)
             {
-                YMov[0] = -YMov[0];
-                YMov[1] = -YMov[1];
+                XMov = new[] { -1, 1 };
+                YMov = new[] { -1, -1 };
             }
+            else if (color == PieceColor.Black)
+            {
+                XMov = new[] { 1, -1 };
+                YMov = new[] { 1, 1 };
+            }
+
         }
 
         public override bool CanEat(CheckersPiece piece)
@@ -254,7 +281,7 @@ namespace GameLogic
 
         protected override ArrayList MovementInDirection(Point increment, ref bool outOfBoard)
         {
-            var path = new System.Collections.ArrayList();
+            var path = new ArrayList();
             BoardPosition pos = null;
 
             pos = new BoardPosition(this.X + increment.X, this.Y + increment.Y);

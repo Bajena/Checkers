@@ -35,10 +35,10 @@ namespace GameLogic
 				throw new ArgumentException();
 		}
 
-		public CheckersMove(BoardPosition[] positions, bool EatMove)
+		public CheckersMove(BoardPosition[] positions, bool eatMove)
 		{
 			this.MovePath = positions;
-			this.EatMove=EatMove;
+			this.EatMove=eatMove;
 		}
 
 		protected static int Inc(int a, int b)

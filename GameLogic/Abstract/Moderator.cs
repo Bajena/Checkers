@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 
 namespace GameLogic.Abstract
 {
@@ -17,8 +18,7 @@ namespace GameLogic.Abstract
 		ArrayList StateList = new ArrayList();
 
 
-		protected IGameState _CurrentGameState;
-		/// <summary>
+	    /// <summary>
 		/// The index of the current state
 		/// </summary>
 		int _CurrentStateIndex = 0;
@@ -34,22 +34,12 @@ namespace GameLogic.Abstract
 
 		#region properties
 
-		/// <summary>
-		/// When Overriden on a derivated class should gets or sets the current GameState 
-		/// </summary>
-		public IGameState CurrentGameState 
-		{
-			get 
-			{
-				return _CurrentGameState;
-			}
-			set
-			{
-				_CurrentGameState = value;
-			}
-		}
+	    /// <summary>
+	    /// When Overriden on a derivated class should gets or sets the current GameState 
+	    /// </summary>
+	    public IGameState CurrentGameState { get; set; }
 
-		/// <summary>
+	    /// <summary>
 		/// Gets tha IPlayer instace of the next player
 		/// </summary>
 		public IPlayer NextPlayer 
@@ -77,12 +67,12 @@ namespace GameLogic.Abstract
 		/// Creates an isntance of the moderator class by giving the player that will participate (in order)
 		/// </summary>
 		/// <param name="players"></param>
-		public Moderator(IPlayer[] players) 
+		public Moderator(IEnumerable<IPlayer> players) 
 		{
 			foreach(IPlayer player in players) 
 			{
 				//suscribe the moderator to the player's OnPerfomMove Event
-				player.OnPerformMove+=new PerformMove(player_OnPerformMove);
+				player.OnPerformMove+=player_OnPerformMove;
 				//Add the player to the list
 				PlayersList.Add(player);
 			}
@@ -93,13 +83,14 @@ namespace GameLogic.Abstract
 		#region private and protected methods
 
 		#region abstract methods
-		/// <summary>
-		/// When overriden on a derivated class should determine wheter a player is a winner or not.
-		/// if the game is not yet over, this method should return false
-		/// </summary>
-		/// <param name="player"></param>
-		/// <returns></returns>
-		public abstract bool IsWinner(IPlayer player);
+
+	    /// <summary>
+	    /// When overriden on a derivated class should determine wheter a player is a winner or not.
+	    /// if the game is not yet over, this method should return false
+	    /// </summary>
+	    /// <param name="player"></param>
+	    /// <returns></returns>
+	    public abstract PlayerGameResult GetPlayerGameResult(IPlayer player);
 
 		/// <summary>
 		/// When Overriden on a derivated class should perform a call the the play method of a player passing the information that 
@@ -147,18 +138,10 @@ namespace GameLogic.Abstract
 		/// </summary>
 		protected virtual void GameOver() 
 		{
-			foreach(IPlayer player in PlayersList) 
+			foreach(IPlayer player in PlayersList)
 			{
-				try 
-				{
-					player.GameOver(IsWinner(player));				
-				}
-				catch(Exception ex)
-				{
-				    throw;
-				}
+			    player.GameOver(GetPlayerGameResult(player));
 			}
-			
 		}
 
 
@@ -171,14 +154,7 @@ namespace GameLogic.Abstract
 		{
 			foreach(IPlayer player in PlayersList) 
 			{
-				try 
-				{
 					player.GameHalted(ex);
-				}
-				catch(Exception exx)
-				{
-				}
-
 			}
 		}
 
@@ -195,30 +171,32 @@ namespace GameLogic.Abstract
 				PerformMove(move);
 
 				//Inform all player that this player perfomed a move suscefully
-				foreach(IPlayer player in PlayersList) 
+				foreach(IPlayer player in PlayersList)
 				{
-					if (!player.Equals(sender))	 
-					{
-						try 
-						{
-							player.MovedPerformed(sender,move);
-						}
-						catch(Exception ex) 
-						{
-							HaltGame(ex);
-						}
-					}
+				    if (player.Equals(sender)) continue;
+
+				    try 
+				    {
+				        player.MovedPerformed(sender,move);
+				    }
+				    catch(Exception ex) 
+				    {
+				        HaltGame(ex);
+				    }
 				}
 
-				if (isGameFinished()) GameOver();
-
+                if (isGameFinished())
+                {
+                    GameOver();
+                    return;
+                }
 
 				//Increase the values of next player
 				_NextPlayerIndex = AdvanceIndex(_NextPlayerIndex);
 
 
 				//Call the current player Play method
-				this.InvokePlayMethod(this.NextPlayer);
+				InvokePlayMethod(NextPlayer);
 
 			}
 			else 
@@ -355,7 +333,6 @@ namespace GameLogic.Abstract
 		#endregion
 
 		#endregion
-
 
 		#region InnerClass used
 

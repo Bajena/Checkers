@@ -42,7 +42,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Abstract\Board.cs" />
-    <Compile Include="AreaBoardEvaluator.cs" />
+    <Compile Include="Heuristics\AreaBoardEvaluator.cs" />
     <Compile Include="BoardPosition.cs" />
     <Compile Include="CheckersBoard.cs" />
     <Compile Include="CheckersModerator.cs" />
@@ -57,13 +57,13 @@
     <Compile Include="Abstract\IPlayer.cs" />
     <Compile Include="Abstract\Moderator.cs" />
     <Compile Include="Pawn.cs" />
-    <Compile Include="PawnStrengthBoardEvaluator.cs" />
+    <Compile Include="Heuristics\PawnStrengthBoardEvaluator.cs" />
     <Compile Include="Abstract\Piece.cs" />
     <Compile Include="PieceColor.cs" />
     <Compile Include="Queen.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SimpleCheckersPlayer.cs" />
-    <Compile Include="SimpleHeuristicBoardEvaluator.cs" />
+    <Compile Include="Heuristics\SimpleHeuristicBoardEvaluator.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

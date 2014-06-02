@@ -2,7 +2,13 @@ using System;
 
 namespace GameLogic.Abstract
 {
-	
+    public enum PlayerGameResult
+    {
+        NotEnded,
+        Win,
+        Lose,
+        Draw
+    }
 	/// <summary>
 	/// Defines what a player should implement
 	/// </summary>
@@ -17,8 +23,8 @@ namespace GameLogic.Abstract
 		/// <summary>
 		/// Called by moderator indicating the player that the games is over and idicating also if this player won or loose.
 		/// </summary>
-		/// <param name="winner"></param>
-		void GameOver(bool winner);
+		/// <param name="result"></param>
+        void GameOver(PlayerGameResult result);
 
 
 		/// <summary>
@@ -33,13 +39,14 @@ namespace GameLogic.Abstract
 		/// <param name="player"></param>
 		/// <param name="move"></param>
 		void MovedPerformed(IPlayer player, IMove move);
-	
 
-		/// <summary>
-		/// Called by the moderator indicating the player that is his turn to play, 
-		/// </summary>
-		/// <param name="state">The game state this player need to know, the player must use this info for playing/thinkin his move and then raise the even OnPerformMove</param>
-        void Play(IGameStateForPlayer info);
+
+	    /// <summary>
+	    /// Called by the moderator indicating the player that is his turn to play, 
+	    /// </summary>
+	    /// <param name="state">The game state this player need to know, the player must use this gameState for playing/thinkin his move and then raise the even OnPerformMove</param>
+	    /// <param name="gameState"></param>
+	    void Play(IGameStateForPlayer gameState);
 
 		/// <summary>
 		/// Event raised by the player to perform a move, the moderator must be suscribed to this event

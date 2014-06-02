@@ -18,7 +18,6 @@ namespace GameLogic
 
 		ArrayList aux;
 		int orgX, orgY;
-        public static bool AmericanRules = false;
 	    
 		protected void EatMoves(int x, int y, IList<CheckersMove> moves)
 		{
@@ -52,7 +51,7 @@ namespace GameLogic
                         int dx = Math.Abs(newX2 - x);
 			            int dy = Math.Abs(newY2 - y);
                         while (this.ParentBoard.IsInsideBoard(newX2, newY2) &&
-                               this.ParentBoard.GetPieceAt(newX2, newY2) == null && ((AmericanRules && (dx + dy == 4)) || (!AmericanRules)))
+                               this.ParentBoard.GetPieceAt(newX2, newY2) == null)
                         {
                             foodFound = true;
 
@@ -111,7 +110,6 @@ namespace GameLogic
 							false
 						)
 					);
-                    if (AmericanRules) break;
 					newX+=Inc[i].X;
 					newY+=Inc[i].Y;	
 				}

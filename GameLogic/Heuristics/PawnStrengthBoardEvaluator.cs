@@ -1,6 +1,6 @@
 ﻿using GameLogic.Abstract;
 
-namespace GameLogic
+namespace GameLogic.Heuristics
 {
     public class PawnStrengthBoardEvaluator : IBoardEvaluator
     {

@@ -28,7 +28,7 @@ namespace GameLogic
             if (!(obj is BoardPosition)) return false;
             else
             {
-                return ((((BoardPosition)obj).X == this.X) && (((BoardPosition)obj).Y == this.Y));
+                return ((((BoardPosition)obj).X == X) && (((BoardPosition)obj).Y == Y));
 
             }
         }

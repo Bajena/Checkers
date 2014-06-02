@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using GameLogic.Abstract;
+﻿using GameLogic.Abstract;
 
-namespace GameLogic
+namespace GameLogic.Heuristics
 {
     public class AreaBoardEvaluator : IBoardEvaluator
     {
@@ -14,7 +9,7 @@ namespace GameLogic
         private readonly double _pawnStrengthArea2;
         private readonly double _queenStrengthArea2;
 
-        private readonly int _area2Width = 1;
+        private const int Area2Width = 1;
 
         public AreaBoardEvaluator()
         {
@@ -55,8 +50,8 @@ namespace GameLogic
         private double GetPiecePoints(CheckersBoard board,CheckersPiece piece, PieceColor playerColor)
         {
             int area = 1;
-            if (piece.X <= _area2Width || piece.X >= board.Width - _area2Width || piece.Y <= _area2Width ||
-                piece.Y >= board.Height - _area2Width) area = 2;
+            if (piece.X <= Area2Width || piece.X >= board.Width - Area2Width || piece.Y <= Area2Width ||
+                piece.Y >= board.Height - Area2Width) area = 2;
 
             double points = 0;
             if (piece is Pawn)
