@@ -352,6 +352,8 @@ namespace Checkers
             black.OnInvalidMove += black_OnInvalidMove;
             black.OnGameOver += black_OnGameOver;
 
+            Text = white + " | " + black;
+
             InitializeBoardDrawing();
             StartGame(white, black);
         }
